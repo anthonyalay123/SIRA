@@ -244,7 +244,7 @@ namespace PruebaEmpresa
         {
              //factura = loLogicaNegocio.goConsultarMovimiento(int.Parse(txtNo.Text.Trim())); // Implementa esta función para obtener los datos de la factura actual
 
-            
+            //
         }
 
         
