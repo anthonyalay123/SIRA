@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.Drawing.Printing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -16,6 +17,7 @@ namespace PruebaEmpresa
     {
         clsNFactura loLogicaNegocio = new clsNFactura();
         BindingSource bsDatos = new BindingSource();
+        private Factura factura;
         public frmTrFactura()
         {
             InitializeComponent();
@@ -93,7 +95,11 @@ namespace PruebaEmpresa
             txtBase12.Clear();
             txtIVA.Clear();
             txtTotal.Clear();
-            dgvDatos.DataSource = new List<DetalleFactura>();
+            bsDatos.DataSource = new List<DetalleFactura>();
+            dgvDatos.DataSource = bsDatos;
+
+            dgvDatos.ReadOnly = false;
+            btnGuardar.Enabled = true;
         }
 
         private void dgvDatos_CellValueChanged(object sender, DataGridViewCellEventArgs e)
@@ -164,10 +170,83 @@ namespace PruebaEmpresa
             txtTotal.Text = totalAPagar.ToString("F2");
         }
 
+        private void btnConsultar_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                txtNo.Text = loLogicaNegocio.goBuscarCodigo("A", txtNo.Text.Trim());
+                lConsultar();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
 
+        private void btnSiguiente_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                txtNo.Text = loLogicaNegocio.goBuscarCodigo("S", txtNo.Text.Trim());
+                lConsultar();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
 
+        private void lConsultar()
+        {
+            if (!string.IsNullOrEmpty(txtNo.Text.Trim()))
+            {
+                // Consultar la factura según el número ingresado
+                var factura = loLogicaNegocio.goConsultarMovimiento(Convert.ToInt32(txtNo.Text.Trim()));
 
+                if (factura != null)
+                {
+                    // Rellenar los campos del formulario con los datos de la factura
+                    txtCliente.Text = factura.Cliente;
+                    dtpFecha.Value = factura.Fecha ?? DateTime.Now;
+                    txtBase0.Text = factura.BaseImponibleIVA0.ToString();
+                    txtBase12.Text = factura.BaseImponibleIVA12.ToString();
+                    txtIVA.Text = factura.IVA.ToString();
+                    txtTotal.Text = factura.TotalAPagar.ToString();
 
+                    // Cargar los detalles de la factura en el DataGridView
+                    bsDatos.DataSource = factura.DetalleFactura.ToList();
+                    dgvDatos.Refresh();
 
+                    // Deshabilitar los controles que no deben ser editados
+                    dgvDatos.ReadOnly = true;
+                    btnGuardar.Enabled = false;
+                }
+                else
+                {
+                    MessageBox.Show("No se encontró la factura con el ID proporcionado.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
+        }
+
+        private void btnNuevo_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                LimpiarFormulario();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void btnImprimir_Click(object sender, EventArgs e)
+        {
+             //factura = loLogicaNegocio.goConsultarMovimiento(int.Parse(txtNo.Text.Trim())); // Implementa esta función para obtener los datos de la factura actual
+
+            
+        }
+
+        
     }
 }
